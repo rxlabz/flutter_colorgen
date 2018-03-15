@@ -46,9 +46,14 @@ void main() {
 
     final tl = tester.getTopLeft(find.byKey(Key('sldL')));
     final br = tester.getBottomRight(find.byKey(Key('sldL')));
-    final target = tl + (br - tl) * .99;
-    await tester.tapAt(target);
+    final target = tl + (br - tl)* .99 ;
 
+    await tester.tapAt(target);
     expect(currentColor, equals(Colors.white));
+
+    await tester.pump();
+
+    await tester.tapAt(tl + (br - tl)* .01 );
+    expect(currentColor, equals(Colors.black));
   });
 }
