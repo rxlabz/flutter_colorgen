@@ -1,8 +1,8 @@
-# Flutter RGBA HSL PICKER
+# Flutter Material Colorgenerator Example
 
-Flutter RGB & HSL color picker examples
+A material colorSwatch generator with 2 simple RGB & HSL color pickers
 
-![screenshot](https://www.evernote.com/shard/s1/sh/f1a36961-a676-4f19-9146-9eed6665d873/540d1efdb2fa2d08/res/207cff09-cb4e-438f-a035-471b0c04392b/skitch.png?resizeSmall&width=320)
+![screenshot](https://www.evernote.com/shard/s1/sh/6dac7b84-0806-4c6c-bbe2-15f19c993be7/2e4020692550ef50/res/7a047ed1-88bf-4027-9b21-7be4d81d64d7/skitch.png?resizeSmall&width=320)
 
 ____
 
