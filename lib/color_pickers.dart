@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:color/color.dart' as colr;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rgb_hsl/color_utils.dart';
 
 typedef void ColorCallback(Color color);
 
@@ -42,22 +45,10 @@ class RGBPickerState extends State<RGBPicker> {
     updateColor();
   }
 
-  double _a = 0.0;
-
-  set a(double a) {
-    _a = a;
-    updateColor();
-  }
-
   RGBPickerState(this._color);
 
   void updateColor() =>
-      color = Color.fromRGBO(_r.toInt(), _g.toInt(), _b.toInt(), _a);
-
-  @override
-  void initState() {
-    super.initState();
-  }
+      color = Color.fromRGBO(_r.toInt(), _g.toInt(), _b.toInt(), 1.0);
 
   @override
   void didUpdateWidget(RGBPicker oldWidget) {
@@ -72,83 +63,38 @@ class RGBPickerState extends State<RGBPicker> {
     _r = _color.red.toDouble();
     _g = _color.green.toDouble();
     _b = _color.blue.toDouble();
-    _a = _color.opacity;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
+    final hsl = colr.RgbColor(_r, _g, _b).toHslColor();
+    final shade50 = colr.HslColor(hsl.h, hsl.s, 95).toRgbColor();
+
+    return Container(
+      color: Color.fromRGBO(shade50.r, shade50.g, shade50.b, 1.0),
+      padding: EdgeInsets.all(10.0),
+      margin: EdgeInsets.symmetric(vertical: 10.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(
-              'Red (${_r.round()})',
-              style: TextStyle(color: Colors.red.shade600),
-            ),
-            SizedBox(
-                width: 160.0,
-                child: Slider(
-                  key: new Key('sldR'),
-                  label: 'Red',
-                  value: _r,
-                  max: 255.0,
-                  onChanged: (value) => setState(() => r = value),
-                )),
-          ]),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text(
-                'Green (${_g.round()})',
-                style: TextStyle(color: Colors.green.shade600),
-              ),
-              SizedBox(
-                  width: 160.0,
-                  child: Slider(
-                    key: new Key('sldG'),
-                    label: 'Green',
-                    value: _g.roundToDouble(),
-                    max: 255.0,
-                    onChanged: (value) => setState(() => g = value),
-                  )),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text(
-                'Blue (${_b.round()})',
-                style: TextStyle(color: Colors.blue.shade600),
-              ),
-              SizedBox(
-                  width: 160.0,
-                  child: Slider(
-                    key: new Key('sldB'),
-                    label: 'Blue',
-                    value: _b.roundToDouble(),
-                    max: 255.0,
-                    onChanged: (value) => setState(() => b = value),
-                  )),
-            ],
-          ),
-          /*
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text(
-                'Opacity (${_a.toStringAsFixed(2)})',
-                style: TextStyle(color: Colors.black.withOpacity(_a)),
-              ),
-              SizedBox(
-                  width: 160.0,
-                  child: Slider(
-                    key: new Key('sldO'),
-                    label: 'Opacity',
-                    value: _a,
-                    max: 1.0,
-                    onChanged: (value) => setState(() => a = value),
-                  )),
-            ],
-          ),*/
+          ColorSlider(
+              key: Key('sldR'),
+              value: _r,
+              label: 'Red',
+              labelStyle: TextStyle(color: Colors.red.shade600),
+              maxValue: 255.0,
+              onChange: (value) => setState(() => r = value)),
+          ColorSlider(
+              key: Key('sldG'),
+              value: _g,
+              label: 'Green',
+              labelStyle: TextStyle(color: Colors.green.shade600),
+              maxValue: 255.0,
+              onChange: (value) => setState(() => g = value)),
+          ColorSlider(
+              key: Key('sldB'),
+              value: _b,
+              label: 'Blue',
+              labelStyle: TextStyle(color: Colors.blue.shade600),
+              maxValue: 255.0,
+              onChange: (value) => setState(() => b = value)),
         ],
       ),
     );
@@ -200,24 +146,10 @@ class HSLPickerState extends State<HSLPicker> {
 
   void updateColor() => color = new colr.HslColor(_h, _s, _l);
 
-  Color hslToColor(colr.HslColor hsl) {
-    colr.RgbColor rgb = _color.toRgbColor();
-    return Color.fromRGBO(rgb.r, rgb.g, rgb.b, 1.0);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   void didUpdateWidget(HSLPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.color != oldWidget.color) {
-      _color = new colr.Color.rgb(
-              widget.color.red, widget.color.green, widget.color.blue)
-          .toHslColor();
-    }
+    if (widget.color != oldWidget.color) _color = colorToHsl(widget.color);
   }
 
   @override
@@ -226,60 +158,80 @@ class HSLPickerState extends State<HSLPicker> {
     _s = _color.s.toDouble();
     _l = _color.l.toDouble();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+    final rgb = colr.HslColor(_h, _s, 95).toRgbColor();
+
+    return Container(
+      color: Color.fromRGBO(rgb.r, rgb.g, rgb.b, 1.0),
+      padding: EdgeInsets.all(10.0),
+      margin: EdgeInsets.symmetric(vertical: 10.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text('Hue (${_h.roundToDouble()})'),
-              SizedBox(
-                  width: 160.0,
-                  child: Slider(
-                    key: new Key('sldH'),
-                    label: 'Hue',
-                    value: _h.roundToDouble(),
-                    max: 360.0,
-                    onChanged: (value) => setState(() => h = value),
-                  )),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text('Saturation (${_s.roundToDouble()})'),
-              Flexible(
-                child: SizedBox(
-                    width: 160.0,
-                    child: Slider(
-                      key: new Key('sldS'),
-                      label: 'Saturation',
-                      value: _s.roundToDouble(),
-                      max: 100.0,
-                      onChanged: (value) => setState(() => s = value),
-                    )),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text('Light (${_l.roundToDouble()})'),
-              SizedBox(
-                  width: 160.0,
-                  child: Slider(
-                    key: new Key('sldL'),
-                    label: 'Light',
-                    value: _l.roundToDouble(),
-                    max: 100.0,
-                    onChanged: (value) => setState(() => l = value),
-                  ))
-            ],
-          ),
+          ColorSlider(
+              key: Key('sldH'),
+              value: _h,
+              label: 'Hue',
+              maxValue: 360.0,
+              onChange: (value) => setState(() => h = value)),
+          ColorSlider(
+              key: Key('sldS'),
+              value: _s,
+              label: 'Saturation',
+              maxValue: 100.0,
+              onChange: (value) => setState(() => s = value)),
+          ColorSlider(
+              key: Key('sldL'),
+              value: _l,
+              label: 'Light',
+              maxValue: 100.0,
+              onChange: (value) => setState(() => l = value)),
         ],
       ),
     );
+  }
+}
+
+class ColorSlider extends StatelessWidget {
+  final double value;
+  final ValueChanged<double> onChange;
+
+  final String label;
+  final TextStyle labelStyle;
+
+  final double width;
+
+  final double minValue;
+  final double maxValue;
+
+  ColorSlider(
+      {Key key,
+      @required this.value,
+      @required this.onChange,
+      this.label,
+      this.labelStyle,
+      this.minValue: 0.0,
+      this.maxValue: 1.0,
+      this.width: 160.0})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Text(
+        '$label : ${value.round()}',
+        style: labelStyle ?? Theme.of(context).textTheme.body1
+        overflow: TextOverflow.ellipsis,
+      ),
+      SizedBox(
+          width: width,
+          child: Slider(
+            key: key,
+            label: label,
+            value: min(max(minValue, value), maxValue),
+            min: minValue,
+            max: maxValue,
+            onChanged: (newValue) => onChange(newValue),
+          )),
+    ]);
   }
 }

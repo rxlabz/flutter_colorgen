@@ -1,8 +1,8 @@
-# Flutter MaterialColor generator Example
+# Flutter MaterialColor generator example
 
-A material colorSwatch generator with 2 simple RGB & HSL color pickers
+A material swatches generator with 2 simple RGB & HSL color pickers
 
-![screenshot](https://www.evernote.com/shard/s1/sh/6dac7b84-0806-4c6c-bbe2-15f19c993be7/2e4020692550ef50/res/7a047ed1-88bf-4027-9b21-7be4d81d64d7/skitch.png?resizeSmall&width=320)
+![screenshot](https://www.evernote.com/shard/s1/sh/16ce14d5-b727-40b9-a105-a1a253770618/2967042375b50b42/res/af1bec64-0780-4a0c-b824-2df05f87fdda/skitch.png?resizeSmall&width=320)
 
 ____
 

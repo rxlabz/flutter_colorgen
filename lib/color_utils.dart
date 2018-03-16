@@ -41,3 +41,6 @@ List<Color> getMaterialColorShades(MaterialColor color) => [
 
 Color getContrastColor(Color c) =>
     c.red + c.green + c.blue < 380 ? Colors.white : Colors.black;
+
+colr.HslColor colorToHsl(Color c) =>
+    colr.Color.rgb(c.red, c.green, c.blue).toHslColor();

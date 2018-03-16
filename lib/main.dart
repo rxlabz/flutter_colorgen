@@ -19,7 +19,7 @@ class ColorAppState extends State<ColorApp> {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'RGB - HSL',
+      title: 'ColorGen',
       theme: new ThemeData(primarySwatch: currentColor),
       home: new MainScreen(
           onNewMaterialColor: (c) => setState(() => currentColor = c)),
@@ -34,17 +34,18 @@ class MainScreen extends StatefulWidget {
   @override
   _MainScreenState createState() => new _MainScreenState();
 }
-class _MainScreenState extends State<MainScreen> {
 
+class _MainScreenState extends State<MainScreen> {
   Color color = kInitialColor;
 
-  /*get labelColor =>
-      color.red + color.green + color.blue < 380 ? Colors.white : Colors.black;*/
+  Color get backgroundColor => getSwatchShade(color, 700);
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        backgroundColor: backgroundColor,
         appBar: AppBar(
-          title: Text('#${color.value.toRadixString(16).padLeft(8, '0')}'),
+          title: Text('Colorgen'),
+          /*title: Text('#${color.value.toRadixString(16).padLeft(8, '0')}'),*/
         ),
         body: SingleChildScrollView(
           padding: EdgeInsets.all(8.0),
@@ -68,6 +69,17 @@ class _MainScreenState extends State<MainScreen> {
                 onColor: onColor,
                 color: color,
               ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Swatches',
+                  style: Theme
+                      .of(context)
+                      .textTheme
+                      .subhead
+                      .copyWith(color: getContrastColor(backgroundColor)),
+                ),
+              ),
               MaterialColorSwatches(color)
             ],
           ),
@@ -75,7 +87,7 @@ class _MainScreenState extends State<MainScreen> {
       );
 
   void onColor(Color newColor) {
-    widget.onNewMaterialColor(newColorSwatch(newColor, opaque:true));
+    widget.onNewMaterialColor(newColorSwatch(newColor, opaque: true));
     setState(() => color = newColor);
   }
 }
@@ -93,19 +105,27 @@ class _MaterialColorSwatchState extends State<MaterialColorSwatches> {
   @override
   Widget build(BuildContext context) {
     final c = newColorSwatch(widget.color);
-    return new Wrap(
-      children: getMaterialColorShades(c).map<Widget>((c) {
-        return Container(
-          alignment: Alignment.center,
-          color: c,
-          width: 60.0,
-          height: 60.0,
-          child: Text(
-            '#${c.value.toRadixString(16).padLeft(8,'0').toUpperCase()}',
-            style: TextStyle(fontSize: 10.0, color: getContrastColor(c)),
-          ),
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        print('_MaterialColorSwatchState.build... $constraints');
+        return Wrap(
+          spacing: 6.0,
+          runSpacing: 6.0,
+          children: getMaterialColorShades(c).map<Widget>((c) {
+            return Container(
+              alignment: Alignment.center,
+              color: c,
+              width: constraints.maxWidth / 2.1,
+              height: 60.0,
+              child: Text(
+                '#${c.value.toRadixString(16).padLeft(8,'0').toUpperCase()}',
+                style: TextStyle(fontSize: 14.0, color: getContrastColor(c)),
+              ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 }
