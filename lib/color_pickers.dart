@@ -219,7 +219,7 @@ class ColorSlider extends StatelessWidget {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(
         '$label : ${value.round()}',
-        style: labelStyle ?? Theme.of(context).textTheme.body1
+        style: labelStyle ?? Theme.of(context).textTheme.body1,
         overflow: TextOverflow.ellipsis,
       ),
       SizedBox(
