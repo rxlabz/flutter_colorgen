@@ -1,7 +1,6 @@
+import 'package:color/color.dart' as colr;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import 'package:color/color.dart' as colr;
 
 typedef void ColorCallback(Color color);
 
@@ -76,7 +75,7 @@ class RGBPickerState extends State<RGBPicker> {
     _a = _color.opacity;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -131,6 +130,7 @@ class RGBPickerState extends State<RGBPicker> {
                   )),
             ],
           ),
+          /*
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
@@ -148,7 +148,7 @@ class RGBPickerState extends State<RGBPicker> {
                     onChanged: (value) => setState(() => a = value),
                   )),
             ],
-          ),
+          ),*/
         ],
       ),
     );
