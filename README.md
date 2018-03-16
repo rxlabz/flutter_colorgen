@@ -1,4 +1,4 @@
-# Flutter Material Colorgenerator Example
+# Flutter MaterialColor generator Example
 
 A material colorSwatch generator with 2 simple RGB & HSL color pickers
 
