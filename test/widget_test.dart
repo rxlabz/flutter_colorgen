@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_rgb_hsl/color_pickers.dart';
-import 'package:flutter_rgb_hsl/main.dart';
+import 'package:flutter_colorgen/main.dart';
+import 'package:flutter_colorgen/widgets/color_pickers.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -10,7 +10,25 @@ void main() {
 
     await tester.pumpWidget(ColorApp());
 
-    expect(find.text('#fff44336'), findsNWidgets(2));
+    expect(find.text('#ff607d8b'), findsOneWidget);
+
+    expect(find.text('Hue : 200'), findsOneWidget);
+    expect(find.text('Saturation : 18'), findsOneWidget);
+    expect(find.text('Light : 46'), findsOneWidget);
+
+    final tl = tester.getTopLeft(find.byKey(Key('sldL')));
+    final br = tester.getBottomRight(find.byKey(Key('sldL')));
+    final maxLight = tl + (br - tl) * .99;
+
+    await tester.tapAt(maxLight);
+    await tester.pump();
+    expect(find.text('#ffffffff'), findsOneWidget);
+
+
+    final minLight = tl + (br - tl)* .01 ;
+    await tester.tapAt( minLight );
+    await tester.pump();
+    expect(find.text('#ff000000'), findsOneWidget);
   });
 
   testWidgets('HSLPicker max / min light show white / black', (WidgetTester tester) async {
@@ -33,9 +51,9 @@ void main() {
               ),
         )));
 
-    expect(find.text('Hue (4.0)'), findsOneWidget);
-    expect(find.text('Saturation (90.0)'), findsOneWidget);
-    expect(find.text('Light (58.0)'), findsOneWidget);
+    expect(find.text('Hue : 4'), findsOneWidget);
+    expect(find.text('Saturation : 90'), findsOneWidget);
+    expect(find.text('Light : 58'), findsOneWidget);
 
     final tl = tester.getTopLeft(find.byKey(Key('sldL')));
     final br = tester.getBottomRight(find.byKey(Key('sldL')));

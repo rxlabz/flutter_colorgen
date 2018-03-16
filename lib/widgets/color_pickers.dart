@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:color/color.dart' as colr;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rgb_hsl/color_utils.dart';
+import 'package:flutter_colorgen/color_utils.dart';
 
 typedef void ColorCallback(Color color);
 
@@ -75,21 +75,21 @@ class RGBPickerState extends State<RGBPicker> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           ColorSlider(
-              key: Key('sldR'),
+              sliderKey: Key('sldR'),
               value: _r,
               label: 'Red',
               labelStyle: TextStyle(color: Colors.red.shade600),
               maxValue: 255.0,
               onChange: (value) => setState(() => r = value)),
           ColorSlider(
-              key: Key('sldG'),
+              sliderKey: Key('sldG'),
               value: _g,
               label: 'Green',
               labelStyle: TextStyle(color: Colors.green.shade600),
               maxValue: 255.0,
               onChange: (value) => setState(() => g = value)),
           ColorSlider(
-              key: Key('sldB'),
+              sliderKey: Key('sldB'),
               value: _b,
               label: 'Blue',
               labelStyle: TextStyle(color: Colors.blue.shade600),
@@ -168,19 +168,19 @@ class HSLPickerState extends State<HSLPicker> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           ColorSlider(
-              key: Key('sldH'),
+              sliderKey: Key('sldH'),
               value: _h,
               label: 'Hue',
               maxValue: 360.0,
               onChange: (value) => setState(() => h = value)),
           ColorSlider(
-              key: Key('sldS'),
+              sliderKey: Key('sldS'),
               value: _s,
               label: 'Saturation',
               maxValue: 100.0,
               onChange: (value) => setState(() => s = value)),
           ColorSlider(
-              key: Key('sldL'),
+              sliderKey: Key('sldL'),
               value: _l,
               label: 'Light',
               maxValue: 100.0,
@@ -203,16 +203,18 @@ class ColorSlider extends StatelessWidget {
   final double minValue;
   final double maxValue;
 
+  final Key sliderKey;
+
   ColorSlider(
-      {Key key,
+      {this.sliderKey,
       @required this.value,
       @required this.onChange,
       this.label,
       this.labelStyle,
       this.minValue: 0.0,
       this.maxValue: 1.0,
-      this.width: 160.0})
-      : super(key: key);
+      this.width: 160.0})/*
+      : super(key: key)*/;
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +227,7 @@ class ColorSlider extends StatelessWidget {
       SizedBox(
           width: width,
           child: Slider(
-            key: key,
+            key: sliderKey,
             label: label,
             value: min(max(minValue, value), maxValue),
             min: minValue,

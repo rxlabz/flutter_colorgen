@@ -44,3 +44,6 @@ Color getContrastColor(Color c) =>
 
 colr.HslColor colorToHsl(Color c) =>
     colr.Color.rgb(c.red, c.green, c.blue).toHslColor();
+
+String colorToHex32(Color color) =>
+    '#${color.value.toRadixString(16).padLeft(8, '0')}';
