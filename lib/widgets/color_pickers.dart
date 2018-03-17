@@ -305,23 +305,14 @@ class ColorSlider extends StatelessWidget {
       ),
       SizedBox(
           width: width,
-          child: Theme(
-            data: new ThemeData
-                    .light() /*.copyWith(
-                sliderTheme: Theme.of(context).sliderTheme.copyWith(
-                    thumbShape: RoundColorSliderThumbShape(),
-                    valueIndicatorShape: PaddleSliderColorValueIndicatorShape(),
-                    activeRailColor: Colors.grey[200]))*/
-                ,
-            child: Slider(
-              key: sliderKey,
-              label: value.toInt().toString(),
-              value: min(max(minValue, value), maxValue),
-              divisions: maxValue.toInt(),
-              min: minValue,
-              max: maxValue,
-              onChanged: (newValue) => onChange(newValue),
-            ),
+          child: Slider(
+            key: sliderKey,
+            label: value.toInt().toString(),
+            value: min(max(minValue, value), maxValue),
+            divisions: maxValue.toInt(),
+            min: minValue,
+            max: maxValue,
+            onChanged: (newValue) => onChange(newValue),
           )),
     ]);
   }
