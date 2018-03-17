@@ -4,6 +4,7 @@ import 'package:color/color.dart' as colr;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorgen/color_utils.dart';
+import 'package:flutter_colorgen/widgets/color_slider.dart';
 
 typedef void ColorCallback(Color color);
 
@@ -167,12 +168,47 @@ class HSLPickerState extends State<HSLPicker> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          ColorSlider(
+          /*LayoutBuilder(
+            builder: (context, constraints) => CustomPaint(
+                  size: Size(constraints.maxWidth, 30.0),
+                  painter: HueGradientPainter(
+                      value: _color.h,
+                      onHueSelection: (double hue) => setState(() => h = hue)),
+                ),
+          ),*/
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(
+              'Hue : ${_h.round()}',
+              style: Theme.of(context).textTheme.body1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(
+                width: 160.0,
+                child: Theme(
+                  data: new ThemeData.light().copyWith(
+                      sliderTheme: Theme.of(context).sliderTheme.copyWith(
+                          thumbShape: RoundColorSliderThumbShape(),
+                          valueIndicatorShape:
+                              PaddleSliderColorValueIndicatorShape(),
+                          activeRailColor: Colors.grey[200])),
+                  child: ColorGradientSlider(
+                    key: Key('sldH'),
+                    label: _h.toInt().toString(),
+                    value: min(max(0.0, _h), 360.0),
+                    divisions: 360.0.toInt(),
+                    min: 0.0,
+                    max: 360.0,
+                    onChanged: (value) => setState(() => h = value),
+                  ),
+                )),
+          ])
+/*          ColorSlider(
               sliderKey: Key('sldH'),
               value: _h,
               label: 'Hue',
               maxValue: 360.0,
-              onChange: (value) => setState(() => h = value)),
+              onChange: (value) => setState(() => h = value))*/
+              ,
           ColorSlider(
               sliderKey: Key('sldS'),
               value: _s,
@@ -188,6 +224,48 @@ class HSLPickerState extends State<HSLPicker> {
         ],
       ),
     );
+  }
+}
+
+class HueGradientPainter extends CustomPainter {
+  final ValueChanged<double> onHueSelection;
+
+  final double value;
+
+  HueGradientPainter({this.value, this.onHueSelection});
+
+  Size size;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    this.size = size;
+    final Gradient gradient = new LinearGradient(
+      colors: getHueGradientColors(),
+    );
+    Rect gradientRect =
+        Rect.fromPoints(Offset.zero, Offset(size.width, size.height));
+    final gradientPaint = Paint()..shader = gradient.createShader(gradientRect);
+
+    final valueX = value / 360 * size.width;
+    Rect cursorRect =
+        Rect.fromPoints(Offset(valueX, 0.0), Offset(valueX + 2, size.height));
+
+    canvas.drawRect(gradientRect, gradientPaint);
+    final cursorPaint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(cursorRect, cursorPaint);
+  }
+
+  @override
+  bool shouldRepaint(HueGradientPainter oldDelegate) =>
+      oldDelegate.value != value;
+
+  @override
+  bool hitTest(Offset position) {
+    final hueValue = position.dx / size.width * 360;
+    onHueSelection(hueValue);
+    return true;
   }
 }
 
@@ -213,8 +291,9 @@ class ColorSlider extends StatelessWidget {
       this.labelStyle,
       this.minValue: 0.0,
       this.maxValue: 1.0,
-      this.width: 160.0})/*
-      : super(key: key)*/;
+      this.width: 160.0,
+      Key key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -226,13 +305,23 @@ class ColorSlider extends StatelessWidget {
       ),
       SizedBox(
           width: width,
-          child: Slider(
-            key: sliderKey,
-            label: label,
-            value: min(max(minValue, value), maxValue),
-            min: minValue,
-            max: maxValue,
-            onChanged: (newValue) => onChange(newValue),
+          child: Theme(
+            data: new ThemeData
+                    .light() /*.copyWith(
+                sliderTheme: Theme.of(context).sliderTheme.copyWith(
+                    thumbShape: RoundColorSliderThumbShape(),
+                    valueIndicatorShape: PaddleSliderColorValueIndicatorShape(),
+                    activeRailColor: Colors.grey[200]))*/
+                ,
+            child: Slider(
+              key: sliderKey,
+              label: value.toInt().toString(),
+              value: min(max(minValue, value), maxValue),
+              divisions: maxValue.toInt(),
+              min: minValue,
+              max: maxValue,
+              onChanged: (newValue) => onChange(newValue),
+            ),
           )),
     ]);
   }

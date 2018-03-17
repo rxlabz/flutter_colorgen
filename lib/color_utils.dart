@@ -47,3 +47,10 @@ colr.HslColor colorToHsl(Color c) =>
 
 String colorToHex32(Color color) =>
     '#${color.value.toRadixString(16).padLeft(8, '0')}';
+
+List<Color> getHueGradientColors({int steps: 36}) =>
+    List.generate(steps, (value) => value).map<Color>((v) {
+      final hsl = colr.HslColor(v * (360 / steps), 67, 50);
+      final rgb = hsl.toRgbColor();
+      return Color.fromRGBO(rgb.r, rgb.g, rgb.b, 1.0);
+    }).toList();
