@@ -20,7 +20,7 @@ class ColorAppState extends State<ColorApp> {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'ColorGen',
+      title: 'ColorGen',debugShowCheckedModeBanner: false,
       theme: new ThemeData(primarySwatch: currentColor),
       home: new MainScreen(
           onNewMaterialColor: (c) => setState(() => currentColor = c)),
