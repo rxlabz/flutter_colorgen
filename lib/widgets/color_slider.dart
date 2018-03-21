@@ -11,25 +11,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_colorgen/color_utils.dart';
-import 'package:color/color.dart' as colr;
 
 abstract class GradientSliderComponentShape {
   const GradientSliderComponentShape();
 
-  /// Returns the preferred size of the shape, based on the given conditions.
   Size getPreferredSize(bool isEnabled, bool isDiscrete);
-
-  /// Paints the shape, taking into account the state passed to it.
-  ///
-  /// [activationAnimation] is an animation triggered when the user beings
-  /// to interact with the slider. It reverses when the user stops interacting
-  /// with the slider.
-  /// [enableAnimation] is an animation triggered when the [Slider] is enabled,
-  /// and it reverses when the slider is disabled.
-  /// If [labelPainter] is non-null, then [labelPainter.paint] should be
-  /// called with the location that the label should appear. If the labelPainter
-  /// passed is null, then no label was supplied to the [Slider].
-  /// [value] is the current parametric value (from 0.0 to 1.0) of the slider.
   void paint(
     RenderBox parentBox,
     PaintingContext context,
@@ -147,16 +133,11 @@ class PaddleSliderColorValueIndicatorShape
       const Offset(0.0, -_distanceBetweenTopBottomCenters);
   static const double _topNeckRadius = 14.0;
   static const double _neckTriangleHypotenuse = _topLobeRadius + _topNeckRadius;
-  // Some convenience values to help readability.
   static const double _twoSeventyDegrees = 3.0 * math.pi / 2.0;
   static const double _ninetyDegrees = math.pi / 2.0;
   static const double _thirtyDegrees = math.pi / 6.0;
   static const Size _preferredSize = const Size.fromHeight(
       _distanceBetweenTopBottomCenters + _topLobeRadius + _bottomLobeRadius);
-  // Set to true if you want a rectangle to be drawn around the label bubble.
-  // This helps with building tests that check that the label draws in the right
-  // place (because it prints the rect in the failed test output). It should not
-  // be checked in while set to "true".
   static const bool _debuggingLabelLocation = false;
 
   static Path _bottomLobePath; // Initialized by _generateBottomLobe
@@ -165,16 +146,12 @@ class PaddleSliderColorValueIndicatorShape
   @override
   Size getPreferredSize(bool isEnabled, bool isDiscrete) => _preferredSize;
 
-  // Adds an arc to the path that has the attributes passed in. This is
-  // a convenience to make adding arcs have less boilerplate.
   static void _addArc(Path path, Offset center, double radius,
       double startAngle, double endAngle) {
     final Rect arcRect = new Rect.fromCircle(center: center, radius: radius);
     path.arcTo(arcRect, startAngle, endAngle - startAngle, false);
   }
 
-  // Generates the bottom lobe path, which is the same for all instances of
-  // the value indicator, so we reuse it for each one.
   static void _generateBottomLobe() {
     const double bottomNeckRadius = 4.5;
     const double bottomNeckStartAngle = _bottomLobeEndAngle - math.pi;
@@ -230,15 +207,12 @@ class PaddleSliderColorValueIndicatorShape
 
   Offset _addBottomLobe(Path path) {
     if (_bottomLobePath == null || _bottomLobeEnd == null) {
-      // Generate this lazily so as to not slow down app startup.
       _generateBottomLobe();
     }
     path.extendWithPath(_bottomLobePath, Offset.zero);
     return _bottomLobeEnd;
   }
 
-  // Determines the "best" offset to keep the bubble on the screen. The calling
-  // code will bound that with the available movement in the paddle shape.
   double _getIdealOffset(
     RenderBox parentBox,
     double halfWidthNeeded,
@@ -252,8 +226,7 @@ class PaddleSliderColorValueIndicatorShape
       2.0 * (_topLobeRadius + halfWidthNeeded),
       2.0 * _topLobeRadius,
     );
-    // We can just multiply by scale instead of a transform, since we're scaling
-    // around (0, 0).
+
     final Offset topLeft = (topLobeRect.topLeft * scale) + center;
     final Offset bottomRight = (topLobeRect.bottomRight * scale) + center;
     double shift = 0.0;
@@ -277,8 +250,6 @@ class PaddleSliderColorValueIndicatorShape
   ) {
     canvas.save();
     canvas.translate(center.dx, center.dy);
-    // The entire value indicator should scale with the size of the label,
-    // to keep it large enough to encompass the label text.
     final double textScaleFactor = labelPainter.height / _labelTextDesignSize;
     final double overallScale = scale * textScaleFactor;
     canvas.scale(overallScale, overallScale);
@@ -286,8 +257,6 @@ class PaddleSliderColorValueIndicatorShape
         textScaleFactor != 0 ? 1.0 / textScaleFactor : 0.0;
     final double labelHalfWidth = labelPainter.width / 2.0;
 
-    // This is the needed extra width for the label.  It is only positive when
-    // the label exceeds the minimum size contained by the round top lobe.
     final double halfWidthNeeded = math.max(
       0.0,
       inverseTextScale * labelHalfWidth - (_topLobeRadius - _labelPadding),
@@ -298,10 +267,8 @@ class PaddleSliderColorValueIndicatorShape
     double leftWidthNeeded;
     double rightWidthNeeded;
     if (shift < 0.0) {
-      // shifting to the left
       shift = math.max(shift, -halfWidthNeeded);
     } else {
-      // shifting to the right
       shift = math.min(shift, halfWidthNeeded);
     }
     rightWidthNeeded = halfWidthNeeded + shift;
@@ -310,20 +277,16 @@ class PaddleSliderColorValueIndicatorShape
     final Path path = new Path();
     final Offset bottomLobeEnd = _addBottomLobe(path);
 
-    // The base of the triangle between the top lobe center and the centers of
-    // the two top neck arcs.
     final double neckTriangleBase = _topNeckRadius - bottomLobeEnd.dx;
-    // The parameter that describes how far along the transition from round to
-    // stretched we are.
+
     final double leftAmount =
         math.max(0.0, math.min(1.0, leftWidthNeeded / neckTriangleBase));
     final double rightAmount =
         math.max(0.0, math.min(1.0, rightWidthNeeded / neckTriangleBase));
-    // The angle between the top neck arc's center and the top lobe's center
-    // and vertical.
+
     final double leftTheta = (1.0 - leftAmount) * _thirtyDegrees;
     final double rightTheta = (1.0 - rightAmount) * _thirtyDegrees;
-    // The center of the top left neck arc.
+
     final Offset neckLeftCenter = new Offset(
       -neckTriangleBase,
       _topLobeCenter.dy + math.cos(leftTheta) * _neckTriangleHypotenuse,
@@ -334,9 +297,7 @@ class PaddleSliderColorValueIndicatorShape
     );
     final double leftNeckArcAngle = _ninetyDegrees - leftTheta;
     final double rightNeckArcAngle = math.pi + _ninetyDegrees - rightTheta;
-    // The distance between the end of the bottom neck arc and the beginning of
-    // the top neck arc. We use this to shrink/expand it based on the scale
-    // factor of the value indicator.
+
     final double neckStretchBaseline =
         bottomLobeEnd.dy - math.max(neckLeftCenter.dy, neckRightCenter.dy);
     final double t = math.pow(inverseTextScale, 3.0);
@@ -422,7 +383,7 @@ class PaddleSliderColorValueIndicatorShape
 
     final ColorTween enableColor = new ColorTween(
       begin: Colors.white,
-      end: colorValue ?? Colors.white /*sliderTheme.valueIndicatorColor*/,
+      end: colorValue ?? Colors.white,
     );
     _drawValueIndicator(
       parentBox,
@@ -553,7 +514,6 @@ class _ColorGradientSliderState extends State<GradientSlider>
     return value * (widget.max - widget.min) + widget.min;
   }
 
-  // Returns a number between 0.0 and 1.0, given a value between min and max.
   double _unlerp(double value) {
     assert(value <= widget.max);
     assert(value >= widget.min);
@@ -569,9 +529,6 @@ class _ColorGradientSliderState extends State<GradientSlider>
 
     GradientSliderThemeData sliderTheme = GradientSliderTheme.of(context);
 
-    // If the widget has active or inactive colors specified, then we plug them
-    // in to the slider theme as best we can. If the developer wants more
-    // control than that, then they need to use a SliderTheme.
     if (widget.startColor != null || widget.endColor != null) {
       sliderTheme = sliderTheme.copyWith(
         startRailColor: widget.startColor,
@@ -644,8 +601,6 @@ class _GradientSliderRenderObjectWidget extends LeafRenderObjectWidget {
       ..mediaQueryData = mediaQueryData
       ..onChanged = onChanged
       ..textDirection = Directionality.of(context);
-    // Ticker provider cannot change since there's a 1:1 relationship between
-    // the _SliderRenderObjectWidget object and the _SliderState object.
   }
 }
 
@@ -668,7 +623,7 @@ class _RenderSlider extends RenderBox {
         _value = value,
         _thumbColor = thumbColor,
         _colors = colors,
-        _sliderTheme = sliderTheme,
+        _gradientSliderTheme = sliderTheme,
         _theme = theme,
         _mediaQueryData = mediaQueryData,
         _onChanged = onChanged,
@@ -746,10 +701,6 @@ class _RenderSlider extends RenderBox {
     }
     _value = convertedValue;
     if (isDiscrete) {
-      // Reset the duration to match the distance that we're traveling, so that
-      // whatever the distance, we still do it in _positionAnimationDuration,
-      // and if we get re-targeted in the middle, it still takes that long to
-      // get to the new location.
       final double distance = (_value - _state.positionController.value).abs();
       _state.positionController.duration =
           distance != 0.0 ? _positionAnimationDuration * (1.0 / distance) : 0.0;
@@ -799,13 +750,13 @@ class _RenderSlider extends RenderBox {
     _updateLabelPainter();
   }
 
-  GradientSliderThemeData get sliderTheme => _sliderTheme;
-  GradientSliderThemeData _sliderTheme;
+  GradientSliderThemeData get sliderTheme => _gradientSliderTheme;
+  GradientSliderThemeData _gradientSliderTheme;
   set sliderTheme(GradientSliderThemeData value) {
-    if (value == _sliderTheme) {
+    if (value == _gradientSliderTheme) {
       return;
     }
-    _sliderTheme = value;
+    _gradientSliderTheme = value;
     markNeedsPaint();
   }
 
@@ -826,8 +777,6 @@ class _RenderSlider extends RenderBox {
       return;
     }
     _mediaQueryData = value;
-    // Media query data includes the textScaleFactor, so we need to update the
-    // label painter.
     _updateLabelPainter();
   }
 
@@ -863,7 +812,7 @@ class _RenderSlider extends RenderBox {
 
   bool get showValueIndicator {
     bool showValueIndicator;
-    switch (_sliderTheme.showValueIndicator) {
+    switch (_gradientSliderTheme.showValueIndicator) {
       case ShowValueIndicator.onlyForDiscrete:
         showValueIndicator = isDiscrete;
         break;
@@ -893,9 +842,6 @@ class _RenderSlider extends RenderBox {
     } else {
       _labelPainter.text = null;
     }
-    // Changing the textDirection can result in the layout changing, because the
-    // bidi algorithm might line up the glyphs differently which can result in
-    // different ligatures, different shapes, etc. So we always markNeedsLayout.
     markNeedsLayout();
   }
 
@@ -1000,7 +946,6 @@ class _RenderSlider extends RenderBox {
   void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
     assert(debugHandleEvent(event, entry));
     if (event is PointerDownEvent && isInteractive) {
-      // We need to add the drag first so that it has priority.
       _drag.addPointer(event);
       _tap.addPointer(event);
     }
@@ -1010,14 +955,12 @@ class _RenderSlider extends RenderBox {
   double computeMinIntrinsicWidth(double height) {
     return math.max(
       _overlayDiameter,
-      _sliderTheme.thumbShape.getPreferredSize(isInteractive, isDiscrete).width,
+      _gradientSliderTheme.thumbShape.getPreferredSize(isInteractive, isDiscrete).width,
     );
   }
 
   @override
   double computeMaxIntrinsicWidth(double height) {
-    // This doesn't quite match the definition of computeMaxIntrinsicWidth,
-    // but it seems within the spirit...
     return _preferredTotalWidth;
   }
 
@@ -1040,12 +983,7 @@ class _RenderSlider extends RenderBox {
 
   void _paintOverlay(Canvas canvas, Offset center) {
     if (!_overlayAnimation.isDismissed) {
-      // TODO(gspencer) : We don't really follow the spec here for overlays.
-      // The spec says to use 16% opacity for drawing over light material,
-      // and 32% for colored material, but we don't really have a way to
-      // know what the underlying color is, so there's no easy way to
-      // implement this. Choosing the "light" version for now.
-      final Paint overlayPaint = new Paint()..color = _sliderTheme.overlayColor;
+      final Paint overlayPaint = new Paint()..color = _gradientSliderTheme.overlayColor;
       final double radius = _overlayRadiusTween.evaluate(_overlayAnimation);
       canvas.drawCircle(center, radius, overlayPaint);
     }
@@ -1069,7 +1007,6 @@ class _RenderSlider extends RenderBox {
     }
 
     const double railRadius = _railHeight / 2.0;
-    const double thumbGap = 2.0;
 
     final double railVerticalCenter = offset.dy + (size.height) / 2.0;
     final double railLeft = offset.dx + _overlayRadius;
@@ -1077,16 +1014,11 @@ class _RenderSlider extends RenderBox {
     final double railBottom = railVerticalCenter + railRadius;
     final double railRight = railLeft + railLength;
     final double railActive = railLeft + railLength * visualPosition;
-    final double thumbRadius = _sliderTheme.thumbShape
-            .getPreferredSize(isInteractive, isDiscrete)
-            .width /
-        2.0;
 
     final Offset thumbCenter = new Offset(railActive, railVerticalCenter);
 
     final Gradient gradient = new LinearGradient(
-      // HUE colors: getHueGradientColors(),
-      colors: colors ?? [_sliderTheme.startRailColor, _sliderTheme.endRailColor],
+      colors: colors ?? [_gradientSliderTheme.startRailColor, _gradientSliderTheme.endRailColor],
     );
     Rect gradientRect = Rect.fromPoints(
         Offset(railLeft, railTop), Offset(railRight, railBottom));
@@ -1102,7 +1034,7 @@ class _RenderSlider extends RenderBox {
         label != null &&
         _valueIndicatorAnimation.status != AnimationStatus.dismissed) {
       if (showValueIndicator) {
-        _sliderTheme.valueIndicatorShape.paint(
+        _gradientSliderTheme.valueIndicatorShape.paint(
             this,
             context,
             isDiscrete,
@@ -1110,14 +1042,14 @@ class _RenderSlider extends RenderBox {
             _valueIndicatorAnimation,
             _enableAnimation,
             _labelPainter,
-            _sliderTheme,
+            _gradientSliderTheme,
             _textDirection,
             value,
           _thumbColor);
       }
     }
 
-    _sliderTheme.thumbShape.paint(
+    _gradientSliderTheme.thumbShape.paint(
         this,
         context,
         isDiscrete,
@@ -1125,7 +1057,7 @@ class _RenderSlider extends RenderBox {
         _overlayAnimation,
         _enableAnimation,
         label != null ? _labelPainter : null,
-        _sliderTheme,
+        _gradientSliderTheme,
         _textDirection,
         value,
       _thumbColor);
@@ -1158,39 +1090,6 @@ class _RenderSlider extends RenderBox {
 }
 
 class GradientSliderThemeData extends Diagnosticable {
-  /// Create a [GradientSliderThemeData] given a set of exact values. All the values
-  /// must be specified.
-  ///
-  /// This will rarely be used directly. It is used by [lerp] to
-  /// create intermediate themes based on two themes.
-  ///
-  /// The simplest way to create a SliderThemeData is to use
-  /// [copyWith] on the one you get from [SliderTheme.of], or create an
-  /// entirely new one with [GradientSliderThemeData.fromPrimaryColors].
-  ///
-  /// ## Sample code
-  ///
-  /// ```dart
-  /// class Blissful extends StatefulWidget {
-  ///   @override
-  ///   State createState() => new BlissfulState();
-  /// }
-  ///
-  /// class BlissfulState extends State<Blissful> {
-  ///   double _bliss;
-  ///
-  ///   @override
-  ///   Widget build(BuildContext context) {
-  ///     return new SliderTheme(
-  ///       data: SliderTheme.of(context).copyWith(activeRailColor: const Color(0xff404080)),
-  ///       child: new Slider(
-  ///         onChanged: (double value) { setState(() { _bliss = value; }); },
-  ///         value: _bliss,
-  ///       ),
-  ///     );
-  ///   }
-  /// }
-  /// ```
   const GradientSliderThemeData({
     @required this.startRailColor,
     @required this.endRailColor,
@@ -1209,15 +1108,6 @@ class GradientSliderThemeData extends Diagnosticable {
         assert(valueIndicatorShape != null),
         assert(showValueIndicator != null);
 
-  /// Generates a SliderThemeData from three main colors.
-  ///
-  /// Usually these are the primary, dark and light colors from
-  /// a [ThemeData].
-  ///
-  /// The opacities of these colors will be overridden with the Material Design
-  /// defaults when assigning them to the slider theme component colors.
-  ///
-  /// This is used to generate the default slider theme for a [ThemeData].
   factory GradientSliderThemeData.fromPrimaryColors({
     @required Color primaryColor,
     @required Color primaryColorDark,
@@ -1227,21 +1117,11 @@ class GradientSliderThemeData extends Diagnosticable {
     assert(primaryColorDark != null);
     assert(primaryColorLight != null);
 
-    // These are Material Design defaults, and are used to derive
-    // component Colors (with opacity) from base colors.
     const int activeRailAlpha = 0xff;
     const int inactiveRailAlpha = 0x3d; // 24% opacity
     const int disabledActiveRailAlpha = 0x52; // 32% opacity
     const int disabledInactiveRailAlpha = 0x1f; // 12% opacity
-    const int thumbAlpha = 0xff;
-    const int disabledThumbAlpha = 0x52; // 32% opacity
-    const int valueIndicatorAlpha = 0xff;
 
-    // TODO(gspencer): We don't really follow the spec here for overlays.
-    // The spec says to use 16% opacity for drawing over light material,
-    // and 32% for colored material, but we don't really have a way to
-    // know what the underlying color is, so there's no easy way to
-    // implement this. Choosing the "light" version for now.
     const int overlayLightAlpha = 0x29; // 16% opacity
 
     return new GradientSliderThemeData(
@@ -1258,12 +1138,8 @@ class GradientSliderThemeData extends Diagnosticable {
     );
   }
 
-  /// The color of the [Slider] rail between the [Slider.min] position and the
-  /// current thumb position.
   final Color startRailColor;
 
-  /// The color of the [Slider] rail between the current thumb position and the
-  /// [Slider.max] position.
   final Color endRailColor;
 
   final Color disabledStartRailColor;
@@ -1278,12 +1154,6 @@ class GradientSliderThemeData extends Diagnosticable {
   /// [GradientSliderComponentShape].
   final GradientSliderComponentShape valueIndicatorShape;
 
-  /// Whether the value indicator should be shown for different types of
-  /// sliders.
-  ///
-  /// By default, [showValueIndicator] is set to
-  /// [ShowValueIndicator.onlyForDiscrete]. The value indicator is only shown
-  /// when the thumb is being touched.
   final ShowValueIndicator showValueIndicator;
 
   GradientSliderThemeData copyWith({
@@ -1309,21 +1179,6 @@ class GradientSliderThemeData extends Diagnosticable {
     );
   }
 
-  /// Linearly interpolate between two slider themes.
-  ///
-  /// The arguments must not be null.
-  ///
-  /// The `t` argument represents position on the timeline, with 0.0 meaning
-  /// that the interpolation has not started, returning `a` (or something
-  /// equivalent to `a`), 1.0 meaning that the interpolation has finished,
-  /// returning `b` (or something equivalent to `b`), and values in between
-  /// meaning that the interpolation is at the relevant point on the timeline
-  /// between `a` and `b`. The interpolation can be extrapolated beyond 0.0 and
-  /// 1.0, so negative values and values greater than 1.0 are valid (and can
-  /// easily be generated by curves such as [Curves.elasticInOut]).
-  ///
-  /// Values for `t` are usually obtained from an [Animation<double>], such as
-  /// an [AnimationController].
   static GradientSliderThemeData lerp(
       GradientSliderThemeData a, GradientSliderThemeData b, double t) {
     assert(a != null);
@@ -1417,9 +1272,6 @@ class GradientSliderThemeData extends Diagnosticable {
 }
 
 class GradientSliderTheme extends InheritedWidget {
-  /// Applies the given theme [data] to [child].
-  ///
-  /// The [data] and [child] arguments must not be null.
   const GradientSliderTheme({
     Key key,
     @required this.data,
@@ -1428,43 +1280,8 @@ class GradientSliderTheme extends InheritedWidget {
         assert(data != null),
         super(key: key, child: child);
 
-  /// Specifies the color and shape values for descendant slider widgets.
   final SliderThemeData data;
 
-  /// Returns the data from the closest [SliderTheme] instance that encloses
-  /// the given context.
-  ///
-  /// Defaults to the ambient [ThemeData.sliderTheme] if there is no
-  /// [SliderTheme] in the given build context.
-  ///
-  /// ## Sample code
-  ///
-  /// ```dart
-  /// class Launch extends StatefulWidget {
-  ///   @override
-  ///   State createState() => new LaunchState();
-  /// }
-  ///
-  /// class LaunchState extends State<Launch> {
-  ///   double _rocketThrust;
-  ///
-  ///   @override
-  ///   Widget build(BuildContext context) {
-  ///     return new SliderTheme(
-  ///       data: SliderTheme.of(context).copyWith(activeRailColor: const Color(0xff804040)),
-  ///       child: new Slider(
-  ///         onChanged: (double value) { setState(() { _rocketThrust = value; }); },
-  ///         value: _rocketThrust,
-  ///       ),
-  ///     );
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// See also:
-  ///
-  ///  * [SliderThemeData], which describes the actual configuration of a slider
-  ///    theme.
   static GradientSliderThemeData of(BuildContext context) {
     final SliderTheme inheritedTheme =
         context.inheritFromWidgetOfExactType(SliderTheme);
